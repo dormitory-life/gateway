@@ -67,18 +67,21 @@ func (s *Server) setupRouter() *http.ServeMux {
 
 func (s *Server) setupPublicRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /auth/ping", s.pingHandler)
+
 	mux.HandleFunc("POST /auth/register", s.authProxy.ServeHTTP)
 	mux.HandleFunc("POST /auth/login", s.authProxy.ServeHTTP)
 	mux.HandleFunc("POST /auth/refresh", s.authProxy.ServeHTTP)
+
+	mux.HandleFunc("GET /core/ping", s.pingHandler)
 }
 
 func (s *Server) setupProtectedRoutes(mux *http.ServeMux) {
 	mux.Handle("/auth/", s.authMiddleware(
-		http.StripPrefix("/auth", s.authProxy),
+		http.StripPrefix("", s.authProxy),
 	))
 
 	mux.Handle("/core/", s.authMiddleware(
-		http.StripPrefix("/core", s.coreProxy),
+		http.StripPrefix("", s.coreProxy),
 	))
 }
 

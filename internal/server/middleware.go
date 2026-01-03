@@ -53,7 +53,7 @@ func (s *Server) authMiddleware(next http.Handler) http.Handler {
 		}
 
 		r.Header.Set("X-User-ID", claims.UserId)
-		r.Header.Set("X-Dormitory-ID", fmt.Sprintf("%d", claims.DormitoryId))
+		r.Header.Set("X-Dormitory-ID", claims.DormitoryId)
 
 		ctx := context.WithValue(r.Context(), "userId", claims.UserId)
 		ctx = context.WithValue(ctx, "dormitoryId", claims.DormitoryId)
@@ -89,7 +89,7 @@ func (s *Server) validateToken(tokenString string) (*rmodel.Claims, error) {
 		return nil, fmt.Errorf("%w: user_id is required", ErrBadRequest)
 	}
 
-	if claims.DormitoryId == 0 {
+	if claims.DormitoryId == "" {
 		return nil, fmt.Errorf("%w: dormitory_id is required", ErrBadRequest)
 	}
 
