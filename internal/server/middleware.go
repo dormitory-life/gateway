@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -55,10 +54,9 @@ func (s *Server) authMiddleware(next http.Handler) http.Handler {
 		r.Header.Set("X-User-ID", claims.UserId)
 		r.Header.Set("X-Dormitory-ID", claims.DormitoryId)
 
-		ctx := context.WithValue(r.Context(), "userId", claims.UserId)
-		ctx = context.WithValue(ctx, "dormitoryId", claims.DormitoryId)
+		s.logger.Debug("extracted ids from token", slog.String("userId", claims.UserId), slog.String("dormitoryId", claims.DormitoryId))
 
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r)
 	})
 }
 
