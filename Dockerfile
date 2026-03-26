@@ -15,8 +15,6 @@ WORKDIR /app
 
 COPY --from=builder /app/gateway-service .
 
-COPY --from=builder /app/migrations ./migrations
-
 COPY --from=builder /app/configs ./configs
 
 EXPOSE 8080

@@ -37,7 +37,7 @@ func New(cfg ServerConfig) *Server {
 	s.jwtSecret = []byte(cfg.JWTSecret)
 
 	mux := s.setupRouter()
-	s.server.Handler = s.loggingMiddleware(mux)
+	s.server.Handler = s.corsMiddleware(s.loggingMiddleware(mux))
 
 	return s
 }
@@ -47,10 +47,23 @@ func (s *Server) createProxy(targetUrl string, prefix string) *httputil.ReverseP
 
 	proxy := httputil.NewSingleHostReverseProxy(target)
 
+	originalDirector := proxy.Director
+
 	proxy.Director = func(req *http.Request) {
+		originalDirector(req)
+
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
 		req.Host = target.Host
+	}
+
+	proxy.ModifyResponse = func(resp *http.Response) error {
+		s.logger.Info("proxy response",
+			slog.String("method", resp.Request.Method),
+			slog.String("url", resp.Request.URL.Path),
+			slog.Int("status", resp.StatusCode))
+
+		return nil
 	}
 
 	return proxy
@@ -66,6 +79,7 @@ func (s *Server) setupRouter() *http.ServeMux {
 }
 
 func (s *Server) setupPublicRoutes(mux *http.ServeMux) {
+
 	mux.HandleFunc("GET /auth/ping", s.pingHandler)
 
 	mux.HandleFunc("POST /auth/register", s.authProxy.ServeHTTP)
