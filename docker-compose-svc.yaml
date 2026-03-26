@@ -9,17 +9,20 @@ services:
       DB_URL: "postgres://user:password@db:5432/db?sslmode=disable"
     ports:
       - 8080:8080
-    depends_on:
-      db:
-        condition: service_healthy
-      auth:
-        condition: service_healthy
-      core:
-        condition: service_healthy
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
+    #   auth:
+    #     condition: service_healthy
+    #   core:
+    #     condition: service_healthy
     restart: "no"
+    networks:
+      - core-gateway
+      - auth-gateway
 
 networks:
   core-gateway:
-    driver: bridge
+    external: true
   auth-gateway:
-    driver: bridge
+    external: true
